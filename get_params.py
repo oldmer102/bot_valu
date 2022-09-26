@@ -36,3 +36,5 @@ def get_list_currencies():
         except requests.exceptions.JSONDecodeError:
             pass
     return list_currencies
+
+

@@ -1,6 +1,6 @@
 from get_params import get_config, get_data_msg, get_list_currencies
 import telebot
-from api import GetPrice
+from extensions import GetPrice, MyError
 
 
 BOT = telebot.TeleBot(get_config('token'))
@@ -32,11 +32,17 @@ def values_help_message(message):
 def test_message(message):
     data = message.text.split(" ")
     price = GetPrice(base=data[0], quote=data[1], amount=data[2], rule=get_list_currencies())
-    if not price.conversion_rule():
-        BOT.send_message(
-            message.chat.id, "Я не знаю валюту: " + price.conversion_rule()
-        )
-    BOT.send_message(message.chat.id, f"{price.conversion()} {price.conversion_rule()}")
+    try:
+        if not price.conversion_rule()[0]:
+            BOT.send_message(
+                message.chat.id, "Я не знаю валюту: " + price.conversion_rule()[1]
+            )
+            raise MyError
+
+        else:
+            BOT.send_message(message.chat.id, f"{price.conversion()} {price.conversion_rule()}")
+    except MyError:
+        print('Былло введено не коректое значение!')
 
 
 if __name__ == "__main__":
