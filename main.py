@@ -38,5 +38,7 @@ def test_message(message):
         )
     BOT.send_message(message.chat.id, f"{price.conversion()} {price.conversion_rule()}")
 
+if __name__ == "__main__":
+    BOT.infinity_polling()
 
-BOT.infinity_polling()
+
