@@ -1,4 +1,4 @@
-from get_params import get_config, get_data_msg, get_list_currencies
+from get_params import get_config, get_data_msg
 import telebot
 from extensions import GetPrice, MyError
 
@@ -28,16 +28,15 @@ def help_message(message):
 def values_help_message(message):
     BOT.send_message(
         message.chat.id,
-        "Список всех валют которые я знаю: \n" + get_data_msg() + "RUB: Российский рубль",
+        "Список всех валют которые я знаю: \n" + get_data_msg()[0] + "RUB: Российский рубль",
     )
 
 
 @BOT.message_handler(content_types=['text'])
 def test_message(message):
     data = message.text.split(" ")
-    print(data)
     if len(data) == 3:
-        price = GetPrice(base=data[0], quote=data[1], amount=data[2], rule=get_list_currencies())
+        price = GetPrice(base=data[0], quote=data[1], amount=data[2], rule=get_data_msg()[1])
         try:
             if not price.conversion_rule()[0]:
                 BOT.send_message(
@@ -53,11 +52,8 @@ def test_message(message):
         BOT.send_message(message.chat.id, 'Даныые введены не коректно! нажмите сюда --> /help для просмотра инструкции')
 
 
-
-
 if __name__ == "__main__":
     #Предзагрузка файлов, дождитесь вывода информации
-    get_list_currencies()
     get_data_msg()
     #Старт бота
     BOT.infinity_polling()
