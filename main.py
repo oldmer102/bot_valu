@@ -8,15 +8,19 @@ BOT = telebot.TeleBot(get_config('token'))
 
 @BOT.message_handler(commands=["start"])
 def start_message(message):
-    BOT.send_message(message.chat.id, "Привет ✌\n Я бот для конвертации валют ")
+    BOT.send_message(message.chat.id, "Привет ✌\n Я бот для конвертации валют, для подробной информации нажми сюда --> /help")
 
 
 @BOT.message_handler(commands=["help"])
 def help_message(message):
     BOT.send_message(
         message.chat.id,
-        f"Давай помогу с примерами как я работаю. Для начала необходимо запросить список валют, взятый из ЦБ РФ "
-        f". Пример работы: EUR RUB 20",
+        f"Давай помогу с примерами как я работаю. Для начала необходимо запросить список валют, взятый из ЦБ РФ командой --> /values "
+        f"После выбора нужных валют введи значения в следующей последовательности: <Короткое имя валюты, "
+        f"цену которой хотим узнать> <Короткое имя валюты, в которой надо узнать цену первой валюты> <Количество первой "
+        f"валюты> Пример работы: EUR RUB 20  Важно! Запись делать используя пробелы",
+
+
     )
 
 
@@ -31,21 +35,29 @@ def values_help_message(message):
 @BOT.message_handler(content_types=['text'])
 def test_message(message):
     data = message.text.split(" ")
-    price = GetPrice(base=data[0], quote=data[1], amount=data[2], rule=get_list_currencies())
-    try:
-        if not price.conversion_rule()[0]:
-            BOT.send_message(
-                message.chat.id, "Я не знаю валюту: " + price.conversion_rule()[1]
-            )
-            raise MyError
+    print(data)
+    if len(data) == 3:
+        price = GetPrice(base=data[0], quote=data[1], amount=data[2], rule=get_list_currencies())
+        try:
+            if not price.conversion_rule()[0]:
+                BOT.send_message(
+                    message.chat.id, "Ошибка: " + price.conversion_rule()[1]
+                )
+                raise MyError
 
-        else:
-            BOT.send_message(message.chat.id, f"{price.conversion()} {price.conversion_rule()}")
-    except MyError:
-        print('Былло введено не коректое значение!')
+            else:
+                BOT.send_message(message.chat.id, f"{price.conversion()} {price.conversion_rule()}")
+        except MyError:
+            print('Былло введено не коректое значение!')
+    else:
+        BOT.send_message(message.chat.id, 'Даныые введены не коректно! нажмите сюда --> /help для просмотра инструкции')
+
+
 
 
 if __name__ == "__main__":
+    #Предзагрузка файлов, дождитесь вывода информации
+    get_list_currencies()
+    get_data_msg()
+    #Старт бота
     BOT.infinity_polling()
-
-
